@@ -16,95 +16,154 @@
         <h1>ExamBoost <span class="ai-tag">AI</span></h1>
       </div>
       <p class="tagline">Smart WAEC &amp; NECO exam practice for Nigerian students</p>
+
+      <div class="header-stats">
+        <div class="header-stat">
+          <span class="header-stat-number" id="header-total-q">0</span>
+          <span class="header-stat-label">Questions Answered</span>
+        </div>
+        <div class="header-stat">
+          <span class="header-stat-number" id="header-accuracy">—</span>
+          <span class="header-stat-label">Session Accuracy</span>
+        </div>
+        <div class="header-stat">
+          <span class="header-stat-number" id="header-subjects">10</span>
+          <span class="header-stat-label">Subjects Available</span>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- ===== MAIN WRAPPER ===== -->
+  <!-- ===== MAIN ===== -->
   <main class="app-main">
 
-    <!-- SUBJECT SELECTOR CARD -->
+    <!-- SUBJECT SELECTOR -->
     <section class="card selector-card" id="selector-section">
-      <h2>Choose a Subject</h2>
+      <h2 class="card-title">Choose a Subject</h2>
+      <p class="card-subtitle">Select a subject below to begin a practice session with WAEC-standard questions.</p>
       <div class="selector-row">
-        <select id="subject-select">
-          <option value="">-- Select a subject --</option>
-          <option value="mathematics">Mathematics</option>
-          <option value="english">English Language</option>
-          <option value="biology">Biology</option>
-          <option value="chemistry">Chemistry</option>
-          <option value="physics">Physics</option>
-          <option value="geography">Geography</option>
-          <option value="economics">Economics</option>
-          <option value="government">Government</option>
-          <option value="literature">Literature in English</option>
-          <option value="civic">Civic Education</option>
-        </select>
-        <button id="start-btn" class="btn btn-primary" disabled>Start Practice</button>
+        <div class="select-wrapper">
+          <select id="subject-select">
+            <option value="">— Select a subject —</option>
+            <option value="mathematics">Mathematics</option>
+            <option value="english">English Language</option>
+            <option value="biology">Biology</option>
+            <option value="chemistry">Chemistry</option>
+            <option value="physics">Physics</option>
+            <option value="geography">Geography</option>
+            <option value="economics">Economics</option>
+            <option value="government">Government</option>
+            <option value="literature">Literature in English</option>
+            <option value="civic">Civic Education</option>
+          </select>
+        </div>
+        <button id="start-btn" class="btn btn-primary" disabled>
+          Start Practice →
+        </button>
       </div>
-      <p class="selector-hint">Select a subject to begin a timed practice session.</p>
+      <p class="selector-hint">Questions are shuffled and drawn from a bank of SS3-level WAEC past questions.</p>
     </section>
 
-    <!-- QUESTION CARD (hidden until session starts) -->
+    <!-- QUESTION CARD -->
     <section class="card question-card hidden" id="question-section">
+
+      <!-- Progress -->
+      <div class="session-progress">
+        <div class="progress-header">
+          <span class="progress-label">Progress</span>
+          <span class="progress-fraction" id="progress-fraction">1 / 10</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Meta tags -->
       <div class="question-meta">
-        <span class="subject-label" id="current-subject-label"></span>
-        <span class="topic-label" id="current-topic-label"></span>
-        <span class="question-counter" id="question-counter">Question 1 of 10</span>
+        <span class="meta-badge subject" id="current-subject-label"></span>
+        <span class="meta-badge topic"   id="current-topic-label"></span>
+        <span class="question-counter"   id="question-counter">Question 1 of 10</span>
       </div>
 
-      <div class="question-body">
-        <p class="question-text" id="question-text">Loading question...</p>
-      </div>
+      <!-- Question -->
+      <p class="question-text" id="question-text">Loading question...</p>
 
-      <div class="options-list" id="options-list">
-        <!-- Options injected by app.js -->
-      </div>
+      <!-- Options -->
+      <div class="options-list" id="options-list"></div>
 
+      <!-- Actions -->
       <div class="question-actions">
         <button id="submit-btn" class="btn btn-primary" disabled>Submit Answer</button>
-        <button id="next-btn" class="btn btn-secondary hidden">Next Question →</button>
+        <button id="next-btn"   class="btn btn-secondary hidden">Next Question →</button>
       </div>
     </section>
 
-    <!-- FEEDBACK PANEL (shown after each answer) -->
+    <!-- FEEDBACK PANEL -->
     <section class="card feedback-card hidden" id="feedback-section">
-      <div class="feedback-header">
+      <div class="feedback-header" id="feedback-header">
         <span class="feedback-badge" id="feedback-badge">✓ Correct</span>
         <span class="correct-answer-text" id="correct-answer-display"></span>
       </div>
-
-      <div class="ai-explanation" id="ai-explanation">
+      <div class="ai-explanation">
         <div class="ai-label">
-          <span class="ai-icon">✦</span> AI Explanation
+          <span class="ai-sparkle">✦</span> AI Explanation
         </div>
         <p id="explanation-text">Generating explanation...</p>
       </div>
     </section>
 
-    <!-- SESSION SUMMARY (shown after all questions) -->
+    <!-- SESSION SUMMARY -->
     <section class="card summary-card hidden" id="summary-section">
-      <h2>Session Complete 🎉</h2>
-      <div class="score-display">
-        <span class="score-number" id="score-display">0</span>
-        <span class="score-label">/ 10 correct</span>
+      <span class="summary-trophy">🏆</span>
+      <h2 class="summary-title">Session Complete!</h2>
+      <p class="summary-subtitle">Here's how you performed and what to focus on next.</p>
+
+      <!-- Score ring -->
+      <div class="score-ring-wrapper">
+        <div class="score-ring" id="score-ring">
+          <span class="score-number" id="score-display">0</span>
+          <span class="score-denom" id="score-denom">/ 10</span>
+          <span class="score-pct-label" id="score-pct">0%</span>
+        </div>
       </div>
 
-      <div class="weak-areas" id="weak-areas-panel">
-        <h3>📍 Areas to Focus On</h3>
-        <ul id="weak-areas-list">
-          <!-- Injected by app.js -->
-        </ul>
+      <!-- Stats row -->
+      <div class="summary-stats">
+        <div class="summary-stat">
+          <span class="summary-stat-value green" id="correct-count">0</span>
+          <span class="summary-stat-label">Correct</span>
+        </div>
+        <div class="summary-stat">
+          <span class="summary-stat-value red" id="wrong-count">0</span>
+          <span class="summary-stat-label">Incorrect</span>
+        </div>
+        <div class="summary-stat">
+          <span class="summary-stat-value" id="accuracy-display">0%</span>
+          <span class="summary-stat-label">Accuracy</span>
+        </div>
       </div>
 
-      <button id="restart-btn" class="btn btn-primary">Practice Again</button>
+      <!-- Weak areas -->
+      <div class="weak-areas-section">
+        <div class="section-heading">Areas to Focus On</div>
+        <div id="weak-areas-list"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="summary-actions">
+        <button id="restart-btn" class="btn btn-primary">Practice Again →</button>
+      </div>
     </section>
 
     <!-- PERFORMANCE TRACKER -->
     <section class="card tracker-card" id="tracker-section">
-      <h2>Your Performance</h2>
-      <p class="tracker-hint">Track your accuracy across topics as you practice.</p>
+      <h2 class="card-title">Your Performance</h2>
+      <p class="card-subtitle">Topic-by-topic accuracy updates live as you answer questions.</p>
       <div id="topic-stats">
-        <p class="no-data-msg">No data yet — complete a practice session to see your stats.</p>
+        <div class="tracker-empty">
+          <span class="tracker-empty-icon">📊</span>
+          Complete a practice session to see your topic breakdown here.
+        </div>
       </div>
     </section>
 
@@ -112,10 +171,11 @@
 
   <!-- ===== FOOTER ===== -->
   <footer class="app-footer">
-    <p>ExamBoost AI &copy; 2025 &mdash; Built for Nigerian students, powered by Claude AI</p>
+    <div class="footer-inner">
+      ExamBoost AI &copy; 2025 &mdash; Built for Nigerian secondary school students &mdash; Powered by Claude AI
+    </div>
   </footer>
 
-  <!-- ===== SCRIPTS ===== -->
   <script src="questions.js"></script>
   <script src="app.js"></script>
 
