@@ -91,6 +91,9 @@
       <!-- Options -->
       <div class="options-list" id="options-list"></div>
 
+      <!-- Keyboard hint -->
+      <p class="keyboard-hint">Press <kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> to select · <kbd>Enter</kbd> to submit / advance</p>
+
       <!-- Actions -->
       <div class="question-actions">
         <button id="submit-btn" class="btn btn-primary" disabled>Submit Answer</button>
@@ -118,13 +121,23 @@
       <h2 class="summary-title">Session Complete!</h2>
       <p class="summary-subtitle">Here's how you performed and what to focus on next.</p>
 
-      <!-- Score ring -->
+      <!-- Score ring (SVG arc) -->
       <div class="score-ring-wrapper">
-        <div class="score-ring" id="score-ring">
-          <span class="score-number" id="score-display">0</span>
-          <span class="score-denom" id="score-denom">/ 10</span>
-          <span class="score-pct-label" id="score-pct">0%</span>
-        </div>
+        <svg id="score-ring-svg" viewBox="0 0 140 140" width="140" height="140" aria-label="Score ring">
+          <circle cx="70" cy="70" r="58" fill="none" stroke="var(--border)" stroke-width="10"/>
+          <circle id="score-arc" cx="70" cy="70" r="58" fill="none"
+            stroke="var(--primary)" stroke-width="10"
+            stroke-linecap="round"
+            stroke-dasharray="364.4" stroke-dashoffset="364.4"
+            transform="rotate(-90 70 70)"
+            style="transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1), stroke .4s"/>
+          <text id="score-display" x="70" y="62" text-anchor="middle" dominant-baseline="central"
+            style="font-family:'DM Serif Display',serif;font-size:2.6rem;fill:var(--text-main)">0</text>
+          <text id="score-denom" x="70" y="88" text-anchor="middle"
+            style="font-size:.75rem;fill:var(--text-light);font-family:'DM Sans',sans-serif">/ 10</text>
+          <text id="score-pct" x="70" y="106" text-anchor="middle"
+            style="font-size:.7rem;font-weight:700;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.5px">0%</text>
+        </svg>
       </div>
 
       <!-- Stats row -->

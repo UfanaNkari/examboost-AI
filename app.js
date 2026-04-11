@@ -481,8 +481,36 @@ let state = {
   score: 0,
   answered: false,
   totalAnswered: 0,
-  performance: {}
+  totalCorrect: 0,        // cumulative across sessions — never resets
+  performance: {},        // lifetime topic tracker — persisted in localStorage
+  sessionPerformance: {}  // current session only — used for summary weak areas
 };
+
+// ===== PERSISTENCE =====
+function saveProgress() {
+  try {
+    localStorage.setItem("eb_performance", JSON.stringify(state.performance));
+    localStorage.setItem("eb_totals", JSON.stringify({
+      totalAnswered: state.totalAnswered,
+      totalCorrect:  state.totalCorrect
+    }));
+  } catch(e) { /* localStorage unavailable — silently ignore */ }
+}
+
+function loadProgress() {
+  try {
+    const perf   = localStorage.getItem("eb_performance");
+    const totals = localStorage.getItem("eb_totals");
+    if (perf)   state.performance    = JSON.parse(perf);
+    if (totals) {
+      const t = JSON.parse(totals);
+      state.totalAnswered = t.totalAnswered || 0;
+      state.totalCorrect  = t.totalCorrect  || 0;
+    }
+  } catch(e) { console.warn("ExamBoost: could not load saved progress."); }
+}
+
+loadProgress();
 
 // ===== DOM REFS =====
 const subjectSelect       = document.getElementById("subject-select");
@@ -500,7 +528,7 @@ const optionsList         = document.getElementById("options-list");
 const submitBtn           = document.getElementById("submit-btn");
 const nextBtn             = document.getElementById("next-btn");
 
-const feedbackSection2    = document.getElementById("feedback-section");
+const feedbackSection2    = null; // removed — feedbackSection (line above) already holds this ref
 const feedbackBadge       = document.getElementById("feedback-badge");
 const feedbackHeader      = document.getElementById("feedback-header");
 const correctAnswerDisplay= document.getElementById("correct-answer-display");
@@ -532,15 +560,44 @@ submitBtn.addEventListener("click", submitAnswer);
 nextBtn.addEventListener("click", nextQuestion);
 restartBtn.addEventListener("click", resetToStart);
 
+// ===== KEYBOARD NAVIGATION =====
+// A/B/C/D or 1/2/3/4 to pick option; Enter to submit or advance
+document.addEventListener("keydown", (e) => {
+  if (!questionSection || questionSection.classList.contains("hidden")) return;
+
+  // After answering — Enter or → to go to next question
+  if (state.answered) {
+    if ((e.key === "Enter" || e.key === "ArrowRight") && !nextBtn.classList.contains("hidden")) {
+      nextQuestion();
+    }
+    return;
+  }
+
+  // Option selection
+  const keyMap = { a: 0, b: 1, c: 2, d: 3, "1": 0, "2": 1, "3": 2, "4": 3 };
+  const idx = keyMap[e.key.toLowerCase()];
+  if (idx !== undefined) {
+    const btns = document.querySelectorAll(".option-btn");
+    if (btns[idx] && !btns[idx].disabled) selectOption(btns[idx], idx);
+    return;
+  }
+
+  // Enter to submit when an option is selected
+  if (e.key === "Enter" && state.selectedOption !== null && !submitBtn.disabled) {
+    submitAnswer();
+  }
+});
+
 updateHeaderStats();
 
 // ===== SESSION MANAGEMENT =====
 function startSession() {
-  state.subject      = subjectSelect.value;
-  state.currentIndex = 0;
-  state.score        = 0;
-  state.answered     = false;
+  state.subject        = subjectSelect.value;
+  state.currentIndex   = 0;
+  state.score          = 0;
+  state.answered       = false;
   state.selectedOption = null;
+  state.sessionPerformance = {};  // reset session tracker for fresh summary
 
   const subjectName = formatSubject(state.subject).toLowerCase();
   const pool = questions
@@ -557,7 +614,16 @@ function startSession() {
     });
 
   if (pool.length === 0) {
-    alert("No questions found for this subject yet. Please try another.");
+    const hint = selectorSection.querySelector(".selector-hint");
+    const existing = selectorSection.querySelector(".inline-error");
+    if (!existing) {
+      const err = document.createElement("p");
+      err.className = "inline-error";
+      err.style.cssText = "margin-top:10px;font-size:.85rem;color:#dc2626;font-weight:600;";
+      err.textContent = "⚠ No questions available for this subject yet. Please choose another.";
+      hint.after(err);
+      setTimeout(() => err.remove(), 4000);
+    }
     return;
   }
 
@@ -641,15 +707,22 @@ function submitAnswer() {
   const q         = state.sessionQuestions[state.currentIndex];
   const isCorrect = state.selectedOption === q.answer;
 
-  if (isCorrect) state.score++;
-
-  // Track performance per topic
-  const topic = q.topic || "General";
-  if (!state.performance[topic]) {
-    state.performance[topic] = { correct: 0, total: 0 };
+  if (isCorrect) {
+    state.score++;
+    state.totalCorrect++;  // cumulative — never resets
   }
+
+  // Track performance per topic in BOTH lifetime and session trackers
+  const topic = q.topic || "General";
+  if (!state.performance[topic])        state.performance[topic]        = { correct: 0, total: 0 };
+  if (!state.sessionPerformance[topic]) state.sessionPerformance[topic] = { correct: 0, total: 0 };
   state.performance[topic].total++;
-  if (isCorrect) state.performance[topic].correct++;
+  state.sessionPerformance[topic].total++;
+  if (isCorrect) {
+    state.performance[topic].correct++;
+    state.sessionPerformance[topic].correct++;
+  }
+  saveProgress();
 
   // Style option buttons
   document.querySelectorAll(".option-btn").forEach((btn, i) => {
@@ -781,19 +854,29 @@ function showSummary() {
   const wrong   = total - correct;
   const pct     = Math.round((correct / total) * 100);
 
-  // Score ring
-  scoreDisplay.textContent = correct;
-  if (scoreDenom) scoreDenom.textContent = `/ ${total}`;
+  // Score ring (SVG arc — circumference 2π×58 ≈ 364.4)
+  const circumference = 364.4;
+  const arc = document.getElementById("score-arc");
+  if (arc) {
+    const offset = circumference - (pct / 100) * circumference;
+    arc.style.strokeDashoffset = offset;
+    const arcColor = pct >= 70 ? "var(--correct)" : pct >= 40 ? "var(--accent-dark)" : "var(--wrong)";
+    arc.style.stroke = arcColor;
+  }
 
-  // Ring colour class
+  // Ring text
+  const sdEl = document.getElementById("score-display");
+  const sdDenom = document.getElementById("score-denom");
+  const sdPct   = document.getElementById("score-pct");
+  if (sdEl)    sdEl.textContent   = correct;
+  if (sdDenom) sdDenom.textContent = `/ ${total}`;
+  if (sdPct) {
+    sdPct.textContent = `${pct}%`;
+    sdPct.style.fill  = pct >= 70 ? "var(--correct)" : pct >= 40 ? "var(--accent-dark)" : "var(--wrong)";
+  }
+
+  // (keeping old scoreDisplay/scoreDenom/scorePct/scoreRing refs harmless)
   const level = pct >= 70 ? "excellent" : pct >= 40 ? "good" : "poor";
-  if (scoreRing) {
-    scoreRing.className = `score-ring ${level}`;
-  }
-  if (scorePct) {
-    scorePct.textContent  = `${pct}%`;
-    scorePct.className    = `score-pct-label ${level}`;
-  }
 
   // Stats row
   if (correctCount)  correctCount.textContent  = correct;
@@ -813,7 +896,7 @@ function showSummary() {
 function renderWeakAreas() {
   weakAreasList.innerHTML = "";
 
-  const weak = Object.entries(state.performance)
+  const weak = Object.entries(state.sessionPerformance)
     .filter(([, v]) => v.total > 0 && (v.correct / v.total) < 0.7)
     .sort((a, b) => (a[1].correct / a[1].total) - (b[1].correct / b[1].total));
 
@@ -898,7 +981,7 @@ function updateHeaderStats() {
 
   let accuracy = 0;
   if (totalQ > 0) {
-    accuracy = Math.round((state.score / totalQ) * 100);
+    accuracy = Math.round((state.totalCorrect / totalQ) * 100);
   }
 
   if (headerTotalQ)  headerTotalQ.textContent  = totalQ;

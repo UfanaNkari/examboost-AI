@@ -105,9 +105,9 @@ const questions = [
     subject: "Mathematics",
     topic: "Vectors",
     question: "If a = 3i + 4j and b = i - 3j, find |2a - b|",
-    options: ["√74", "√50", "√90", "√106"],
-    answer: "√106",
-    explanation_hint: "2a = 6i + 8j. 2a - b = (6-1)i + (8+3)j = 5i + 11j. |2a - b| = √(25 + 121) = √146. Recheck: 5²+11²=25+121=146... answer is √146."
+    options: ["√74", "√50", "√90", "√146"],
+    answer: "√146",
+    explanation_hint: "2a = 6i + 8j. 2a - b = (6-1)i + (8+3)j = 5i + 11j. |2a - b| = √(5² + 11²) = √(25 + 121) = √146."
   },
   {
     id: 13,
@@ -133,8 +133,8 @@ const questions = [
     topic: "Sequences & Series",
     question: "The 3rd and 7th terms of an AP are 10 and 26 respectively. Find the first term.",
     options: ["2", "4", "6", "8"],
-    answer: "4",
-    explanation_hint: "T₃ = a + 2d = 10 and T₇ = a + 6d = 26. Subtracting: 4d = 16, d = 4. Then a = 10 - 2(4) = 2. Wait: a=2. Recheck options — answer is 2."
+    answer: "2",
+    explanation_hint: "T₃ = a + 2d = 10 and T₇ = a + 6d = 26. Subtracting: 4d = 16, d = 4. Then a = 10 - 2(4) = 10 - 8 = 2. The first term is 2."
   },
 
   // ===== ENGLISH LANGUAGE (SS3 / WAEC Level) =====

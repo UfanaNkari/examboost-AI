@@ -910,6 +910,35 @@ body {
   white-space: nowrap;
 }
 
+/* ===== KEYBOARD HINT ===== */
+.keyboard-hint {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  box-shadow: 0 1px 0 var(--border-strong);
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) { .keyboard-hint { display: none; } }
+
 /* ===== FOOTER ===== */
 .app-footer {
   text-align: center;
