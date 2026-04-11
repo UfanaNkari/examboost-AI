@@ -910,6 +910,74 @@ body {
   white-space: nowrap;
 }
 
+/* ===== CHANGE SUBJECT BUTTON ===== */
+.btn-change-subject {
+  margin-left: auto;
+  background: none;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btn-change-subject:hover {
+  border-color: var(--wrong);
+  color: var(--wrong);
+  background: var(--wrong-bg);
+}
+
+/* ===== TIMER ===== */
+.timer-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.timer-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.timer-track {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.timer-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--primary);
+  width: 100%;
+  transition: width 1s linear, background 0.4s ease;
+}
+
+.timer-fill.warn   { background: var(--warning); }
+.timer-fill.danger { background: var(--wrong); }
+
+.timer-display {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 30px;
+  text-align: right;
+  transition: color 0.4s ease;
+  flex-shrink: 0;
+}
+
+.timer-display.warn   { color: var(--warning); }
+.timer-display.danger { color: var(--wrong); }
+
 /* ===== KEYBOARD HINT ===== */
 .keyboard-hint {
   font-size: 0.75rem;

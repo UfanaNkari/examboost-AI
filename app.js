@@ -5,6 +5,7 @@
 const CLAUDE_API_KEY = "YOUR_API_KEY_HERE"; // ← replace with your key
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 const QUESTIONS_PER_SESSION = 10;
+const QUESTION_TIME_SECONDS = 90; // countdown per question
 
 // ===== STUDY TIPS DATABASE =====
 // Provides rich, topic-specific recommendations in the summary
@@ -537,6 +538,97 @@ const explanationText     = document.getElementById("explanation-text");
 const scoreDisplay        = document.getElementById("score-display");
 const scoreDenom          = document.getElementById("score-denom");
 const scorePct            = document.getElementById("score-pct");
+
+// Timer & change-subject refs
+const timerFill         = document.getElementById("timer-fill");
+const timerDisplay      = document.getElementById("timer-display");
+const changeSubjectBtn  = document.getElementById("change-subject-btn");
+
+// ===== TIMER ENGINE =====
+let timerInterval = null;
+let timerSeconds  = 0;
+
+function startTimer() {
+  clearTimer();
+  timerSeconds = QUESTION_TIME_SECONDS;
+  updateTimerUI(timerSeconds);
+
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerUI(timerSeconds);
+
+    if (timerSeconds <= 0) {
+      clearTimer();
+      if (!state.answered) {
+        timeUp();
+      }
+    }
+  }, 1000);
+}
+
+function clearTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function updateTimerUI(secs) {
+  if (!timerFill || !timerDisplay) return;
+  const pct = (secs / QUESTION_TIME_SECONDS) * 100;
+  timerFill.style.width = pct + "%";
+
+  const mins = Math.floor(secs / 60);
+  const s    = secs % 60;
+  timerDisplay.textContent = `${mins}:${s.toString().padStart(2, "0")}`;
+
+  // Colour states
+  const level = secs <= 10 ? "danger" : secs <= 30 ? "warn" : "";
+  timerFill.className    = "timer-fill"    + (level ? " " + level : "");
+  timerDisplay.className = "timer-display" + (level ? " " + level : "");
+}
+
+function timeUp() {
+  // Auto-mark as wrong and show feedback — student ran out of time
+  state.answered     = true;
+  state.totalAnswered++;
+
+  const q     = state.sessionQuestions[state.currentIndex];
+  const topic = q.topic || "General";
+  if (!state.performance[topic])        state.performance[topic]        = { correct: 0, total: 0 };
+  if (!state.sessionPerformance[topic]) state.sessionPerformance[topic] = { correct: 0, total: 0 };
+  state.performance[topic].total++;
+  state.sessionPerformance[topic].total++;
+  saveProgress();
+
+  // Reveal correct answer on all buttons
+  document.querySelectorAll(".option-btn").forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add("correct");
+  });
+
+  // Show feedback with "Time's up!" message
+  feedbackSection.classList.remove("hidden");
+  feedbackHeader.className = "feedback-header wrong-header";
+  feedbackBadge.textContent = "⏰  Time's up!";
+  feedbackBadge.className   = "feedback-badge wrong";
+  const letters = ["A", "B", "C", "D"];
+  correctAnswerDisplay.textContent =
+    `Correct answer: ${letters[q.answer]}. ${q.options[q.answer]}`;
+  explanationText.textContent = "";
+  explanationText.classList.add("loading-dots");
+  fetchExplanation(q, false);
+
+  renderTracker();
+  updateHeaderStats();
+  submitBtn.classList.add("hidden");
+  nextBtn.classList.remove("hidden");
+
+  // Shake the timer display for feedback
+  if (timerDisplay) {
+    timerDisplay.textContent = "0:00";
+    timerFill.style.width    = "0%";
+    timerFill.className      = "timer-fill danger";
+  }
+}
 const scoreRing           = document.getElementById("score-ring");
 const correctCount        = document.getElementById("correct-count");
 const wrongCount          = document.getElementById("wrong-count");
@@ -559,6 +651,10 @@ startBtn.addEventListener("click", startSession);
 submitBtn.addEventListener("click", submitAnswer);
 nextBtn.addEventListener("click", nextQuestion);
 restartBtn.addEventListener("click", resetToStart);
+if (changeSubjectBtn) changeSubjectBtn.addEventListener("click", () => {
+  clearTimer();
+  resetToStart();
+});
 
 // ===== KEYBOARD NAVIGATION =====
 // A/B/C/D or 1/2/3/4 to pick option; Enter to submit or advance
@@ -688,6 +784,8 @@ function renderQuestion() {
   submitBtn.classList.remove("hidden");
   nextBtn.classList.add("hidden");
   feedbackSection.classList.add("hidden");
+
+  startTimer(); // begin countdown for this question
 }
 
 function selectOption(clickedBtn, index) {
@@ -701,6 +799,7 @@ function selectOption(clickedBtn, index) {
 // ===== ANSWER CHECKING =====
 function submitAnswer() {
   if (state.selectedOption === null || state.answered) return;
+  clearTimer(); // stop countdown the moment student submits
   state.answered = true;
   state.totalAnswered++;
 
@@ -845,6 +944,7 @@ function nextQuestion() {
 
 // ===== SESSION SUMMARY =====
 function showSummary() {
+  clearTimer();
   questionSection.classList.add("hidden");
   feedbackSection.classList.add("hidden");
   summarySection.classList.remove("hidden");

@@ -67,15 +67,25 @@
     <!-- QUESTION CARD -->
     <section class="card question-card hidden" id="question-section">
 
-      <!-- Progress -->
+      <!-- Progress + Change Subject -->
       <div class="session-progress">
         <div class="progress-header">
           <span class="progress-label">Progress</span>
           <span class="progress-fraction" id="progress-fraction">1 / 10</span>
+          <button id="change-subject-btn" class="btn-change-subject" title="End session and pick a new subject">← Change subject</button>
         </div>
         <div class="progress-track">
           <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
         </div>
+      </div>
+
+      <!-- Timer bar -->
+      <div class="timer-row">
+        <div class="timer-icon">⏱</div>
+        <div class="timer-track">
+          <div class="timer-fill" id="timer-fill"></div>
+        </div>
+        <span class="timer-display" id="timer-display">1:30</span>
       </div>
 
       <!-- Meta tags -->
