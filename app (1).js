@@ -1,14 +1,14 @@
 // ===================================================
-// ExamBoost AI — app.js
+// ExamBoost AI — app.js  (Refined MVP · Phase 4)
+// Bugs fixed: BUG-01 through BUG-06
+// Scholar Hackathon Team 03 · April 14, 2026
 // ===================================================
 
-const CLAUDE_API_KEY = "YOUR_API_KEY_HERE"; // ← replace with your key
+const CLAUDE_API_KEY = "YOUR_API_KEY_HERE";
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 const QUESTIONS_PER_SESSION = 10;
-const QUESTION_TIME_SECONDS = 90; // countdown per question
 
 // ===== STUDY TIPS DATABASE =====
-// Provides rich, topic-specific recommendations in the summary
 const studyTips = {
   "Algebra": {
     tips: [
@@ -98,7 +98,7 @@ const studyTips = {
       "Practice problems involving circular arrangements — these appear in WAEC."
     ],
     resources: ["New General Mathematics SS3", "WAEC Past Questions (Permutation)", "Statistics and Probability textbook"],
-    encouragement: "Permutation and Combination questions are completely solvable if you know which formula to apply. The key is identifying 'with' or 'without' replacement, and whether order matters."
+    encouragement: "Permutation and Combination questions are completely solvable if you know which formula to apply. The key is identifying whether order matters."
   },
   "Number Theory": {
     tips: [
@@ -118,8 +118,6 @@ const studyTips = {
     resources: ["New General Mathematics SS2–SS3", "WAEC Past Questions (Geometry)", "BBC Bitesize Circle Theorems"],
     encouragement: "Geometry rewards visual thinkers. Take your time to draw neat, labelled diagrams and you'll find the solutions become much clearer. Practice makes this topic intuitive!"
   },
-
-  // English Language topics
   "Lexis & Structure": {
     tips: [
       "Read WAEC past questions on Lexis & Structure daily — the question types repeat across years.",
@@ -136,7 +134,7 @@ const studyTips = {
       "Watch out for vocabulary-in-context questions — the meaning of a word can change in different passages."
     ],
     resources: ["Countdown to WAEC English", "WAEC Past Questions (Comprehension)", "Reading novels like Chinua Achebe's works"],
-    encouragement: "Comprehension is a skill that improves steadily with reading practice. Even 20 minutes of reading daily — novels, newspapers, textbooks — will sharpen your ability to understand and answer passages."
+    encouragement: "Comprehension is a skill that improves steadily with reading practice. Even 20 minutes of reading daily will sharpen your ability to understand and answer passages."
   },
   "Oral English": {
     tips: [
@@ -159,14 +157,12 @@ const studyTips = {
   "Vocabulary": {
     tips: [
       "Learn words in families: noun, verb, adjective, adverb forms of the same root word.",
-      "Pay special attention to commonly confused words: affect/effect, principal/principle, complement/compliment.",
+      "Pay special attention to commonly confused words: affect/effect, principal/principle.",
       "Use new vocabulary words in sentences immediately after learning them to reinforce memory."
     ],
     resources: ["Word Power Made Easy (Norman Lewis)", "Oxford Word Skills", "WAEC Past Questions (Vocabulary)"],
-    encouragement: "A strong vocabulary improves every section of your English paper — Comprehension, Summary and Lexis & Structure. Investing time in vocabulary pays dividends across the whole exam!"
+    encouragement: "A strong vocabulary improves every section of your English paper. Investing time in vocabulary pays dividends across the whole exam!"
   },
-
-  // Science topics
   "Genetics": {
     tips: [
       "Draw Punnett squares for every genetics cross — never try to do it in your head.",
@@ -174,7 +170,7 @@ const studyTips = {
       "Memorise blood group genetics: I^A and I^B are codominant; i is recessive."
     ],
     resources: ["WAEC Biology Textbook (Genetics chapter)", "WAEC Past Questions (Biology)", "YouTube: Amoeba Sisters Genetics"],
-    encouragement: "Genetics questions follow very predictable patterns in WAEC. Once you master Punnett squares and the basic inheritance rules, you can solve virtually any genetics question that appears!"
+    encouragement: "Genetics questions follow very predictable patterns in WAEC. Once you master Punnett squares and the basic inheritance rules, you can solve virtually any genetics question!"
   },
   "Ecology": {
     tips: [
@@ -183,7 +179,7 @@ const studyTips = {
       "Memorise ecological terms: producers, consumers, decomposers, herbivores, carnivores, omnivores."
     ],
     resources: ["WAEC Biology Textbook (Ecology chapters)", "WAEC Past Questions (Ecology)", "Practical Ecology field notes"],
-    encouragement: "Ecology covers real-world concepts that are logical and interconnected. Understanding one concept (like energy flow) makes related concepts much easier to grasp. Build your knowledge systematically!"
+    encouragement: "Ecology covers real-world concepts that are logical and interconnected. Understanding one concept makes related concepts much easier to grasp!"
   },
   "Cell Biology": {
     tips: [
@@ -192,28 +188,26 @@ const studyTips = {
       "Understand the difference between mitosis and meiosis — number of divisions, products, and purpose."
     ],
     resources: ["WAEC Biology Textbook (Cell Biology)", "WAEC Past Questions", "YouTube: Crash Course Biology"],
-    encouragement: "Cell Biology forms the foundation of all Biology. Strong knowledge here makes topics like Genetics, Nutrition and Reproduction much easier. Your investment here pays off across the whole subject!"
+    encouragement: "Cell Biology forms the foundation of all Biology. Strong knowledge here makes topics like Genetics, Nutrition and Reproduction much easier!"
   },
   "Nutrition": {
     tips: [
       "Know the digestive enzymes: where they act, what they break down, and what they produce.",
       "Learn the food classes: carbohydrates, proteins, fats, vitamins, minerals, water and their functions.",
-      "Understand deficiency diseases: kwashiorkor (protein), scurvy (vitamin C), rickets (vitamin D), anaemia (iron)."
+      "Understand deficiency diseases: kwashiorkor (protein), scurvy (vitamin C), rickets (vitamin D)."
     ],
     resources: ["WAEC Biology Textbook (Nutrition)", "WAEC Past Questions", "NHS Nutrition resources online"],
-    encouragement: "Nutrition is one of the most mark-rich and learnable topics in WAEC Biology. The facts are clear-cut and memorisable — a few focused revision sessions can make this a guaranteed scoring area!"
+    encouragement: "Nutrition is one of the most mark-rich and learnable topics in WAEC Biology. A few focused revision sessions can make this a guaranteed scoring area!"
   },
   "Reproduction": {
     tips: [
       "Know the differences between sexual and asexual reproduction with examples.",
       "Understand the human menstrual cycle — its stages, hormones involved and duration.",
-      "Know pollination types in plants: self-pollination vs cross-pollination, and their agents (wind, insects, water)."
+      "Know pollination types in plants: self-pollination vs cross-pollination, and their agents."
     ],
     resources: ["WAEC Biology Textbook (Reproduction)", "WAEC Past Questions (Reproduction)", "YouTube: Biology with Dr. Binocs"],
-    encouragement: "Reproduction is tested in every WAEC Biology paper. The topic is logical and follows clear biological principles. Consistent revision with past questions will make this a strong area for you!"
+    encouragement: "Reproduction is tested in every WAEC Biology paper. Consistent revision with past questions will make this a strong area for you!"
   },
-
-  // Chemistry topics
   "Electrochemistry": {
     tips: [
       "Remember: OIL RIG — Oxidation Is Loss (of electrons), Reduction Is Gain (of electrons).",
@@ -221,7 +215,7 @@ const studyTips = {
       "Know the electrochemical series — it determines which ions are discharged preferentially."
     ],
     resources: ["New School Chemistry (Osei Yaw Ababio)", "WAEC Past Questions (Chemistry)", "YouTube: Chemistry with Kemi"],
-    encouragement: "Electrochemistry is one of the most tested Chemistry topics in WAEC. The rules are consistent — once you understand cathode vs anode and oxidation vs reduction, the questions become very manageable!"
+    encouragement: "Electrochemistry is one of the most tested Chemistry topics in WAEC. Once you understand cathode vs anode and oxidation vs reduction, the questions become very manageable!"
   },
   "Organic Chemistry": {
     tips: [
@@ -230,7 +224,7 @@ const studyTips = {
       "Practice IUPAC naming rules systematically — find the longest chain, number from the nearest branch."
     ],
     resources: ["New School Chemistry (Ababio) — Organic chapters", "WAEC Past Questions (Organic Chemistry)", "YouTube: Organic Chemistry Basics"],
-    encouragement: "Organic Chemistry can feel overwhelming, but WAEC tests the same families of reactions repeatedly. Mastering alkanes, alkenes, alkynes and their reactions will cover most of what you need!"
+    encouragement: "WAEC tests the same families of reactions repeatedly. Mastering alkanes, alkenes, alkynes and their reactions will cover most of what you need!"
   },
   "Atomic Structure": {
     tips: [
@@ -239,16 +233,16 @@ const studyTips = {
       "Mass number = protons + neutrons. Isotopes have the same atomic number but different mass numbers."
     ],
     resources: ["New School Chemistry (Ababio)", "WAEC Past Questions (Atomic Structure)", "GCSE Chemistry revision notes"],
-    encouragement: "Atomic Structure is foundational — understanding it deeply makes topics like Electrochemistry, Periodic Table and Chemical Bonding much clearer. Invest time here and the benefits compound across the subject!"
+    encouragement: "Atomic Structure is foundational — understanding it deeply makes topics like Electrochemistry and the Periodic Table much clearer!"
   },
   "Equilibrium": {
     tips: [
       "Le Chatelier's Principle: the system always opposes the change applied to it.",
-      "Increasing temperature always favours the endothermic direction (absorbs heat to oppose the increase).",
+      "Increasing temperature always favours the endothermic direction.",
       "A catalyst speeds up both forward and reverse reactions equally — it does NOT shift equilibrium position."
     ],
     resources: ["New School Chemistry (Ababio) — Equilibrium chapter", "WAEC Past Questions", "YouTube: Le Chatelier's Principle explained"],
-    encouragement: "Equilibrium principles appear in both Chemistry theory and practical questions. The logic behind Le Chatelier's Principle is consistent — learn it well once and it applies to every equilibrium problem!"
+    encouragement: "The logic behind Le Chatelier's Principle is consistent — learn it well once and it applies to every equilibrium problem!"
   },
   "Acids, Bases & Salts": {
     tips: [
@@ -257,10 +251,8 @@ const studyTips = {
       "Practice salt preparation methods: neutralisation, direct combination, precipitation and displacement."
     ],
     resources: ["New School Chemistry (Ababio)", "WAEC Past Questions (Acids & Bases)", "Practical Chemistry lab notes"],
-    encouragement: "Acids, Bases & Salts is one of the highest-scoring Chemistry topics in WAEC. The concepts are everyday and intuitive — linking them to real-life examples (lemon juice is acidic, soap is alkaline) helps retention!"
+    encouragement: "Acids, Bases & Salts is one of the highest-scoring Chemistry topics in WAEC. The concepts are everyday and intuitive!"
   },
-
-  // Physics topics
   "Waves": {
     tips: [
       "Memorise v = fλ (wave speed = frequency × wavelength) and use it for every wave calculation.",
@@ -268,7 +260,7 @@ const studyTips = {
       "Understand the difference between transverse waves (e.g. light) and longitudinal waves (e.g. sound)."
     ],
     resources: ["New School Physics (Anyakoha)", "WAEC Past Questions (Waves)", "YouTube: Physics with Professor Leonard"],
-    encouragement: "Waves questions in WAEC are almost always calculation-based using v = fλ. Once you're confident with the formula and unit conversions, this becomes one of the easiest mark-scoring areas in Physics!"
+    encouragement: "Waves questions in WAEC are almost always calculation-based using v = fλ. Once you're confident with the formula, this becomes one of the easiest scoring areas in Physics!"
   },
   "Electricity": {
     tips: [
@@ -277,7 +269,7 @@ const studyTips = {
       "Power formulas: P = IV = I²R = V²/R. Know all three versions."
     ],
     resources: ["New School Physics (Anyakoha) — Electricity chapters", "WAEC Past Questions (Electricity)", "PhET Circuit Simulator (free online)"],
-    encouragement: "Electricity questions are calculation-heavy but formula-driven. Students who memorise and practise Ohm's Law, power formulas and circuit rules consistently score high marks in this section!"
+    encouragement: "Students who memorise and practise Ohm's Law, power formulas and circuit rules consistently score high marks in Electricity!"
   },
   "Mechanics": {
     tips: [
@@ -286,7 +278,7 @@ const studyTips = {
       "Practise equations of motion: v = u + at, s = ut + ½at², v² = u² + 2as."
     ],
     resources: ["New School Physics (Anyakoha)", "WAEC Past Questions (Mechanics)", "YouTube: Michel van Biezen Physics"],
-    encouragement: "Mechanics carries the most marks in WAEC Physics. The equations of motion and energy formulas appear in almost every paper. Daily practice with numerical problems is the fastest path to improvement here!"
+    encouragement: "Mechanics carries the most marks in WAEC Physics. Daily practice with numerical problems is the fastest path to improvement here!"
   },
   "Optics": {
     tips: [
@@ -295,19 +287,17 @@ const studyTips = {
       "Understand the difference between converging (convex) and diverging (concave) lenses and their ray diagrams."
     ],
     resources: ["New School Physics (Anyakoha) — Light chapters", "WAEC Past Questions (Optics)", "YouTube: Optics for WAEC"],
-    encouragement: "Optics questions follow a predictable pattern — lens formula, mirror formula, and ray diagrams. Once you practise these with past questions, you'll find them among the most straightforward questions in WAEC Physics!"
+    encouragement: "Optics questions follow a predictable pattern. Once you practise with past questions, you'll find them among the most straightforward questions in WAEC Physics!"
   },
   "Radioactivity": {
     tips: [
-      "Know the three types of radiation: alpha (α), beta (β), gamma (γ) and their properties (charge, mass, penetration).",
+      "Know the three types of radiation: alpha (α), beta (β), gamma (γ) and their properties.",
       "Half-life formula: N = N₀ × (1/2)ⁿ where n = number of half-lives elapsed.",
       "Understand nuclear equations — the mass numbers and atomic numbers must balance on both sides."
     ],
     resources: ["New School Physics (Anyakoha) — Radioactivity chapter", "WAEC Past Questions (Radioactivity)", "YouTube: Radioactivity for WAEC NECO"],
-    encouragement: "Radioactivity questions are very formulaic in WAEC. The half-life calculation appears in nearly every paper and follows the exact same method every time. Practise 10 past questions and you'll have it mastered!"
+    encouragement: "Radioactivity questions are very formulaic in WAEC. The half-life calculation appears in nearly every paper and always follows the same method!"
   },
-
-  // Economics topics
   "Microeconomics": {
     tips: [
       "Know the laws of demand and supply, and what causes shifts vs movements along the curves.",
@@ -315,7 +305,7 @@ const studyTips = {
       "Study market structures: perfect competition, monopoly, oligopoly and monopolistic competition."
     ],
     resources: ["Amplified Economics for SS3 (Femi Longe)", "WAEC Past Questions (Economics)", "EconplusDal YouTube channel"],
-    encouragement: "Microeconomics is the foundation of WAEC Economics. The demand-supply framework appears across many questions. A solid understanding here gives you tools to answer even unfamiliar questions logically!"
+    encouragement: "The demand-supply framework appears across many questions. A solid understanding here gives you tools to answer even unfamiliar questions logically!"
   },
   "Macroeconomics": {
     tips: [
@@ -324,48 +314,44 @@ const studyTips = {
       "Study inflation: types (demand-pull, cost-push), causes, effects and government remedies."
     ],
     resources: ["Amplified Economics for SS3", "WAEC Past Questions (Macroeconomics)", "CBN website for current data"],
-    encouragement: "Macroeconomics questions often relate to Nigeria's real economy — which makes them more interesting to study. Connecting concepts like inflation and monetary policy to current news helps them stick in memory!"
+    encouragement: "Macroeconomics questions often relate to Nigeria's real economy — connecting concepts like inflation to current news helps them stick in memory!"
   },
-
-  // Government topics
   "Nigerian Constitution": {
     tips: [
       "Know the structure of the 1999 Constitution: the Exclusive, Concurrent and Residual legislative lists.",
-      "Memorise key sections: Chapter 2 (Fundamental Objectives), Chapter 4 (Fundamental Rights), Chapter 5 (Legislature).",
+      "Memorise key sections: Chapter 2 (Fundamental Objectives), Chapter 4 (Fundamental Rights).",
       "Know the amendment procedure and how many states must ratify a constitutional amendment."
     ],
     resources: ["Government for Senior Secondary Schools (Shuaib)", "WAEC Past Questions (Government)", "The 1999 Constitution of Nigeria (free PDF)"],
-    encouragement: "Nigerian Constitution questions are very direct and factual. Students who read the constitution alongside their textbook and past questions consistently score high marks in this section. It rewards preparation!"
+    encouragement: "Nigerian Constitution questions are very direct and factual. Students who read the constitution alongside past questions consistently score high marks!"
   },
   "International Organisations": {
     tips: [
-      "Know the founding dates, headquarters and objectives of: UN, AU, ECOWAS, Commonwealth, OPEC, NATO.",
+      "Know the founding dates, headquarters and objectives of: UN, AU, ECOWAS, Commonwealth, OPEC.",
       "Study Nigeria's role in each organisation — WAEC often asks application-level questions.",
       "Know the specialised agencies of the UN: WHO, UNESCO, UNICEF, FAO, ILO and their functions."
     ],
     resources: ["Government for Senior Secondary Schools", "WAEC Past Questions (International Relations)", "UN.org for current information"],
-    encouragement: "International Organisations is a factual topic that rewards systematic memorisation. Creating a table with Organisation, Founded, HQ, Purpose for each body is an effective revision strategy!"
+    encouragement: "Creating a table with Organisation, Founded, HQ, Purpose for each body is an effective revision strategy for this topic!"
   },
   "Political Concepts": {
     tips: [
       "Know the key concepts: democracy, federalism, separation of powers, rule of law, constitutionalism.",
-      "Understand different types of government: presidential vs parliamentary, unitary vs federal, democracy vs autocracy.",
+      "Understand different types of government: presidential vs parliamentary, unitary vs federal.",
       "Be able to explain advantages AND disadvantages of each system — WAEC asks for both."
     ],
     resources: ["Government for Senior Secondary Schools (Shuaib)", "WAEC Past Questions (Political Concepts)", "Introduction to Political Science textbooks"],
-    encouragement: "Political concepts form the theoretical backbone of Government. Mastering the definitions and being able to apply them to Nigerian examples will set your answers apart from average candidates!"
+    encouragement: "Mastering definitions and applying them to Nigerian examples will set your answers apart from average candidates!"
   },
   "Nigerian History": {
     tips: [
-      "Know key dates: 1914 (Amalgamation), 1960 (Independence), 1963 (Republic), 1966 (First Coup), 1999 (Democracy).",
+      "Know key dates: 1914 (Amalgamation), 1960 (Independence), 1963 (Republic), 1966 (First Coup).",
       "Study the colonial period, nationalist movements and key figures: Zik, Awolowo, Sardauna, Balewa.",
       "Understand the causes and consequences of the Nigerian Civil War (1967–1970)."
     ],
     resources: ["Government for Senior Secondary Schools", "WAEC Past Questions (Nigerian History)", "Nigeria Since Independence — historical texts"],
-    encouragement: "Nigerian History in Government is not just memorisation — WAEC wants you to explain causes, effects and significance. Understanding the WHY behind events helps you answer both factual and analytical questions!"
+    encouragement: "Understanding the WHY behind events helps you answer both factual and analytical questions effectively!"
   },
-
-  // Geography topics
   "Climate": {
     tips: [
       "Know Nigeria's vegetation zones from south to north: Mangrove → Rain Forest → Guinea Savanna → Sudan Savanna → Sahel.",
@@ -373,7 +359,7 @@ const studyTips = {
       "Study the ITCZ movement and how it determines Nigeria's dry and rainy seasons."
     ],
     resources: ["New Oxford Geography for SS3", "WAEC Past Questions (Physical Geography)", "Nigerian Meteorological Agency (NIMET) website"],
-    encouragement: "Climate and vegetation questions appear in every WAEC Geography paper. Nigeria's geography is your context — connecting what you study to the environment around you makes the information much easier to retain!"
+    encouragement: "Connecting what you study to the environment around you makes the information much easier to retain and recall in exams!"
   },
   "Population": {
     tips: [
@@ -382,7 +368,7 @@ const studyTips = {
       "Study the effects of population growth on Nigeria's economy, environment and social services."
     ],
     resources: ["New Oxford Geography for SS3 (Population chapter)", "WAEC Past Questions (Human Geography)", "National Population Commission Nigeria website"],
-    encouragement: "Population Geography connects to real issues in Nigeria today. Your understanding of why cities like Lagos are overcrowded gives you a real advantage in answering these questions with depth and local examples!"
+    encouragement: "Your understanding of why cities like Lagos are overcrowded gives you a real advantage in answering these questions with depth and local examples!"
   },
   "Map Reading": {
     tips: [
@@ -391,7 +377,7 @@ const studyTips = {
       "Practice identifying landforms from contour maps: hills, valleys, ridges, escarpments and spurs."
     ],
     resources: ["New Oxford Geography for SS3 (Map Reading chapters)", "WAEC Practical Geography Past Questions", "Ordnance Survey map reading guides"],
-    encouragement: "Map Reading is a practical skill that improves quickly with practice. WAEC provides the map — your job is to read it correctly. Regular practice with past WAEC map questions is the single most effective revision strategy here!"
+    encouragement: "Map Reading improves quickly with practice. Regular practice with past WAEC map questions is the single most effective revision strategy here!"
   },
   "Natural Resources": {
     tips: [
@@ -400,10 +386,8 @@ const studyTips = {
       "Study the advantages and problems associated with oil production in Nigeria."
     ],
     resources: ["New Oxford Geography for SS3 (Resources chapter)", "WAEC Past Questions", "NNPC website for oil data"],
-    encouragement: "Nigeria's natural resources are literally part of your daily life. This makes the topic relatable and easier to study with depth. Use Nigerian news stories about oil, farming and mining to bring your answers to life!"
+    encouragement: "Nigeria's natural resources are literally part of your daily life. Use Nigerian news stories about oil, farming and mining to bring your answers to life!"
   },
-
-  // Civic Education
   "Human Rights": {
     tips: [
       "Know all the rights in Chapter 4 of the 1999 Constitution (Sections 33–46) and what each covers.",
@@ -411,16 +395,16 @@ const studyTips = {
       "Know the NHRC (National Human Rights Commission) and its role in protecting citizens' rights."
     ],
     resources: ["Civic Education for SS3 (MAN)", "WAEC Past Questions (Civic Education)", "The 1999 Nigerian Constitution — Chapter 4"],
-    encouragement: "Human Rights is a topic you should care about — these rights protect YOU. Understanding them deeply makes answering exam questions natural because you're writing about real protections that matter to every Nigerian!"
+    encouragement: "Human Rights is a topic you should care about — these rights protect YOU. Understanding them deeply makes answering exam questions feel natural!"
   },
   "Democracy": {
     tips: [
-      "Know the features of democracy: free elections, rule of law, separation of powers, fundamental rights, majority rule with minority protection.",
+      "Know the features of democracy: free elections, rule of law, separation of powers, majority rule with minority protection.",
       "Understand types of democracy: direct (ancient Athens) and representative/indirect (modern Nigeria).",
       "Know the challenges to democracy in Nigeria: corruption, poverty, illiteracy, electoral malpractice."
     ],
     resources: ["Civic Education for SS3", "WAEC Past Questions (Democracy)", "INEC website for Nigerian electoral information"],
-    encouragement: "Democracy questions ask you to connect theory to Nigeria's reality. Students who relate their answers to real examples from Nigeria's political history consistently score higher than those who give only abstract answers!"
+    encouragement: "Students who relate their answers to real examples from Nigeria's political history consistently score higher than those who give only abstract answers!"
   },
   "Citizenship": {
     tips: [
@@ -429,10 +413,8 @@ const studyTips = {
       "Know what constitutes good citizenship and the consequences of bad citizenship behaviour."
     ],
     resources: ["Civic Education for SS3 (MAN)", "WAEC Past Questions (Citizenship)", "Nigerian Citizenship and Immigration Service"],
-    encouragement: "Citizenship topics are straightforward and reward clear, organised answers. Learning the rights and duties in a structured way — perhaps with a table — makes revision efficient and exam answers comprehensive!"
+    encouragement: "Learning the rights and duties in a structured table makes revision efficient and exam answers comprehensive!"
   },
-
-  // Literature
   "Drama": {
     tips: [
       "Know the plot, characters, themes and setting of each prescribed drama text inside out.",
@@ -440,7 +422,7 @@ const studyTips = {
       "Practice writing character analysis — WAEC often asks you to assess a character's role in the play."
     ],
     resources: ["The prescribed WAEC text(s) for your year", "Literature in English Past Questions (WAEC)", "Sparknotes for plot summaries (use as supplement only)"],
-    encouragement: "Literature rewards those who read the texts carefully and think about them deeply. Reading a prescribed text twice — once for story, once for themes and techniques — gives you everything you need for a high score!"
+    encouragement: "Reading a prescribed text twice — once for story, once for themes and techniques — gives you everything you need for a high score!"
   },
   "Poetry": {
     tips: [
@@ -449,19 +431,17 @@ const studyTips = {
       "Know the structural elements: stanza, line, rhyme scheme, rhythm, metre."
     ],
     resources: ["Literature in English for SS3 (prescribed texts)", "WAEC Past Questions (Poetry)", "Poetry Foundation website"],
-    encouragement: "Poetry questions seem intimidating but follow a clear pattern: identify devices, explain their effect, and connect them to the poem's meaning. With practice on past questions, this becomes one of the most manageable sections!"
+    encouragement: "Poetry questions follow a clear pattern: identify devices, explain their effect, connect to the poem's meaning. Past questions make this very manageable!"
   },
   "Prose": {
     tips: [
       "Know each prescribed prose text thoroughly: plot summary, all major and minor characters, themes, setting and style.",
-      "Practice writing about themes — identify them and use specific evidence (quotations or scene references) from the text.",
+      "Practice writing about themes — identify them and use specific evidence from the text.",
       "Understand the narrative technique: first person, third person, omniscient narrator — and its effect on the reader."
     ],
     resources: ["The prescribed WAEC prose texts for your year", "WAEC Past Questions (Prose)", "Things Fall Apart, The African Child (common texts)"],
-    encouragement: "Prose questions are very answerable if you know your texts well. WAEC rewards candidates who show they've genuinely engaged with the story and can discuss characters and themes with specific textual evidence!"
+    encouragement: "WAEC rewards candidates who show they've genuinely engaged with the story and can discuss characters and themes with specific textual evidence!"
   },
-
-  // Default for any unrecognised topic
   "General": {
     tips: [
       "Review your class notes and textbook on this topic thoroughly.",
@@ -469,179 +449,61 @@ const studyTips = {
       "Form a study group with classmates to discuss and explain concepts to each other."
     ],
     resources: ["WAEC Past Questions (subject-specific)", "Your subject textbook", "WAEC Chief Examiner's Report (free on WAEC website)"],
-    encouragement: "Every topic can be improved with focused, consistent practice. Identify exactly which sub-topics are causing difficulty, tackle them one at a time, and use past questions to measure your progress. You've got this!"
+    encouragement: "Every topic can be improved with focused, consistent practice. Identify the sub-topics causing difficulty, tackle them one at a time, and use past questions to measure your progress. You've got this!"
   }
 };
 
 // ===== STATE =====
 let state = {
-  subject: "",
+  subject:          "",
   sessionQuestions: [],
-  currentIndex: 0,
-  selectedOption: null,
-  score: 0,
-  answered: false,
-  totalAnswered: 0,
-  totalCorrect: 0,        // cumulative across sessions — never resets
-  performance: {},        // lifetime topic tracker — persisted in localStorage
-  sessionPerformance: {}  // current session only — used for summary weak areas
+  currentIndex:     0,
+  selectedOption:   null,
+  score:            0,
+  answered:         false,
+  navigating:       false,   // BUG-02 FIX: guard against double-click
+  totalAnswered:    0,
+  performance:      {}
 };
 
-// ===== PERSISTENCE =====
-function saveProgress() {
-  try {
-    localStorage.setItem("eb_performance", JSON.stringify(state.performance));
-    localStorage.setItem("eb_totals", JSON.stringify({
-      totalAnswered: state.totalAnswered,
-      totalCorrect:  state.totalCorrect
-    }));
-  } catch(e) { /* localStorage unavailable — silently ignore */ }
-}
-
-function loadProgress() {
-  try {
-    const perf   = localStorage.getItem("eb_performance");
-    const totals = localStorage.getItem("eb_totals");
-    if (perf)   state.performance    = JSON.parse(perf);
-    if (totals) {
-      const t = JSON.parse(totals);
-      state.totalAnswered = t.totalAnswered || 0;
-      state.totalCorrect  = t.totalCorrect  || 0;
-    }
-  } catch(e) { console.warn("ExamBoost: could not load saved progress."); }
-}
-
-loadProgress();
-
 // ===== DOM REFS =====
-const subjectSelect       = document.getElementById("subject-select");
-const startBtn            = document.getElementById("start-btn");
-const selectorSection     = document.getElementById("selector-section");
-const questionSection     = document.getElementById("question-section");
-const feedbackSection     = document.getElementById("feedback-section");
-const summarySection      = document.getElementById("summary-section");
+const subjectSelect        = document.getElementById("subject-select");
+const startBtn             = document.getElementById("start-btn");
+const selectorSection      = document.getElementById("selector-section");
+const questionSection      = document.getElementById("question-section");
+const feedbackSection      = document.getElementById("feedback-section");
+const summarySection       = document.getElementById("summary-section");
 
-const subjectLabel        = document.getElementById("current-subject-label");
-const topicLabel          = document.getElementById("current-topic-label");
-const questionCounter     = document.getElementById("question-counter");
-const questionText        = document.getElementById("question-text");
-const optionsList         = document.getElementById("options-list");
-const submitBtn           = document.getElementById("submit-btn");
-const nextBtn             = document.getElementById("next-btn");
+const subjectLabel         = document.getElementById("current-subject-label");
+const topicLabel           = document.getElementById("current-topic-label");
+const questionCounter      = document.getElementById("question-counter");
+const questionText         = document.getElementById("question-text");
+const optionsList          = document.getElementById("options-list");
+const submitBtn            = document.getElementById("submit-btn");
+const nextBtn              = document.getElementById("next-btn");
 
-const feedbackSection2    = null; // removed — feedbackSection (line above) already holds this ref
-const feedbackBadge       = document.getElementById("feedback-badge");
-const feedbackHeader      = document.getElementById("feedback-header");
-const correctAnswerDisplay= document.getElementById("correct-answer-display");
-const explanationText     = document.getElementById("explanation-text");
+// BUG-05 FIX: removed duplicate feedbackSection2 declaration
+const feedbackBadge        = document.getElementById("feedback-badge");
+const feedbackHeader       = document.getElementById("feedback-header");
+const correctAnswerDisplay = document.getElementById("correct-answer-display");
+const explanationText      = document.getElementById("explanation-text");
 
-const scoreDisplay        = document.getElementById("score-display");
-const scoreDenom          = document.getElementById("score-denom");
-const scorePct            = document.getElementById("score-pct");
+const scoreDisplay         = document.getElementById("score-display");
+const scoreDenom           = document.getElementById("score-denom");
+const scorePct             = document.getElementById("score-pct");
+const scoreArc             = document.getElementById("score-arc");   // BUG-04 FIX: was "score-ring"
+const correctCount         = document.getElementById("correct-count");
+const wrongCount           = document.getElementById("wrong-count");
+const accuracyDisplay      = document.getElementById("accuracy-display");
+const weakAreasList        = document.getElementById("weak-areas-list");
+const restartBtn           = document.getElementById("restart-btn");
+const topicStats           = document.getElementById("topic-stats");
+const progressFill         = document.getElementById("progress-fill");
+const progressFraction     = document.getElementById("progress-fraction");
 
-// Timer & change-subject refs
-const timerFill         = document.getElementById("timer-fill");
-const timerDisplay      = document.getElementById("timer-display");
-const changeSubjectBtn  = document.getElementById("change-subject-btn");
-
-// ===== TIMER ENGINE =====
-let timerInterval = null;
-let timerSeconds  = 0;
-
-function startTimer() {
-  clearTimer();
-  timerSeconds = QUESTION_TIME_SECONDS;
-  updateTimerUI(timerSeconds);
-
-  timerInterval = setInterval(() => {
-    timerSeconds--;
-    updateTimerUI(timerSeconds);
-
-    if (timerSeconds <= 0) {
-      clearTimer();
-      if (!state.answered) {
-        timeUp();
-      }
-    }
-  }, 1000);
-}
-
-function clearTimer() {
-  clearInterval(timerInterval);
-  timerInterval = null;
-}
-
-function updateTimerUI(secs) {
-  if (!timerFill || !timerDisplay) return;
-  const pct = (secs / QUESTION_TIME_SECONDS) * 100;
-  timerFill.style.width = pct + "%";
-
-  const mins = Math.floor(secs / 60);
-  const s    = secs % 60;
-  timerDisplay.textContent = `${mins}:${s.toString().padStart(2, "0")}`;
-
-  // Colour states
-  const level = secs <= 10 ? "danger" : secs <= 30 ? "warn" : "";
-  timerFill.className    = "timer-fill"    + (level ? " " + level : "");
-  timerDisplay.className = "timer-display" + (level ? " " + level : "");
-}
-
-function timeUp() {
-  // Auto-mark as wrong and show feedback — student ran out of time
-  state.answered     = true;
-  state.totalAnswered++;
-
-  const q     = state.sessionQuestions[state.currentIndex];
-  const topic = q.topic || "General";
-  if (!state.performance[topic])        state.performance[topic]        = { correct: 0, total: 0 };
-  if (!state.sessionPerformance[topic]) state.sessionPerformance[topic] = { correct: 0, total: 0 };
-  state.performance[topic].total++;
-  state.sessionPerformance[topic].total++;
-  saveProgress();
-
-  // Reveal correct answer on all buttons
-  document.querySelectorAll(".option-btn").forEach((btn, i) => {
-    btn.disabled = true;
-    if (i === q.answer) btn.classList.add("correct");
-  });
-
-  // Show feedback with "Time's up!" message
-  feedbackSection.classList.remove("hidden");
-  feedbackHeader.className = "feedback-header wrong-header";
-  feedbackBadge.textContent = "⏰  Time's up!";
-  feedbackBadge.className   = "feedback-badge wrong";
-  const letters = ["A", "B", "C", "D"];
-  correctAnswerDisplay.textContent =
-    `Correct answer: ${letters[q.answer]}. ${q.options[q.answer]}`;
-  explanationText.textContent = "";
-  explanationText.classList.add("loading-dots");
-  fetchExplanation(q, false);
-
-  renderTracker();
-  updateHeaderStats();
-  submitBtn.classList.add("hidden");
-  nextBtn.classList.remove("hidden");
-
-  // Shake the timer display for feedback
-  if (timerDisplay) {
-    timerDisplay.textContent = "0:00";
-    timerFill.style.width    = "0%";
-    timerFill.className      = "timer-fill danger";
-  }
-}
-const scoreRing           = document.getElementById("score-ring");
-const correctCount        = document.getElementById("correct-count");
-const wrongCount          = document.getElementById("wrong-count");
-const accuracyDisplay     = document.getElementById("accuracy-display");
-const weakAreasList       = document.getElementById("weak-areas-list");
-const restartBtn          = document.getElementById("restart-btn");
-const topicStats          = document.getElementById("topic-stats");
-const progressFill        = document.getElementById("progress-fill");
-const progressFraction    = document.getElementById("progress-fraction");
-
-const headerTotalQ        = document.getElementById("header-total-q");
-const headerAccuracy      = document.getElementById("header-accuracy");
-const headerSubjects      = document.getElementById("header-subjects");
+const headerTotalQ         = document.getElementById("header-total-q");
+const headerAccuracy       = document.getElementById("header-accuracy");
+const headerSubjects       = document.getElementById("header-subjects");
 
 // ===== INIT =====
 subjectSelect.addEventListener("change", () => {
@@ -651,36 +513,18 @@ startBtn.addEventListener("click", startSession);
 submitBtn.addEventListener("click", submitAnswer);
 nextBtn.addEventListener("click", nextQuestion);
 restartBtn.addEventListener("click", resetToStart);
-if (changeSubjectBtn) changeSubjectBtn.addEventListener("click", () => {
-  clearTimer();
-  resetToStart();
-});
 
-// ===== KEYBOARD NAVIGATION =====
-// A/B/C/D or 1/2/3/4 to pick option; Enter to submit or advance
+// Keyboard shortcuts: A/B/C/D to select, Enter to submit or advance
 document.addEventListener("keydown", (e) => {
-  if (!questionSection || questionSection.classList.contains("hidden")) return;
-
-  // After answering — Enter or → to go to next question
-  if (state.answered) {
-    if ((e.key === "Enter" || e.key === "ArrowRight") && !nextBtn.classList.contains("hidden")) {
-      nextQuestion();
-    }
-    return;
-  }
-
-  // Option selection
-  const keyMap = { a: 0, b: 1, c: 2, d: 3, "1": 0, "2": 1, "3": 2, "4": 3 };
-  const idx = keyMap[e.key.toLowerCase()];
-  if (idx !== undefined) {
+  const key = e.key.toUpperCase();
+  if (["A","B","C","D"].includes(key) && !state.answered) {
+    const idx  = ["A","B","C","D"].indexOf(key);
     const btns = document.querySelectorAll(".option-btn");
-    if (btns[idx] && !btns[idx].disabled) selectOption(btns[idx], idx);
-    return;
+    if (btns[idx] && !btns[idx].disabled) btns[idx].click();
   }
-
-  // Enter to submit when an option is selected
-  if (e.key === "Enter" && state.selectedOption !== null && !submitBtn.disabled) {
-    submitAnswer();
+  if (e.key === "Enter") {
+    if (!state.answered && !submitBtn.disabled) submitBtn.click();
+    else if (state.answered && !nextBtn.classList.contains("hidden")) nextBtn.click();
   }
 });
 
@@ -692,8 +536,8 @@ function startSession() {
   state.currentIndex   = 0;
   state.score          = 0;
   state.answered       = false;
+  state.navigating     = false;
   state.selectedOption = null;
-  state.sessionPerformance = {};  // reset session tracker for fresh summary
 
   const subjectName = formatSubject(state.subject).toLowerCase();
   const pool = questions
@@ -710,16 +554,7 @@ function startSession() {
     });
 
   if (pool.length === 0) {
-    const hint = selectorSection.querySelector(".selector-hint");
-    const existing = selectorSection.querySelector(".inline-error");
-    if (!existing) {
-      const err = document.createElement("p");
-      err.className = "inline-error";
-      err.style.cssText = "margin-top:10px;font-size:.85rem;color:#dc2626;font-weight:600;";
-      err.textContent = "⚠ No questions available for this subject yet. Please choose another.";
-      hint.after(err);
-      setTimeout(() => err.remove(), 4000);
-    }
+    alert("No questions found for this subject yet. Please try another.");
     return;
   }
 
@@ -734,40 +569,56 @@ function startSession() {
   renderQuestion();
 }
 
+// BUG-01 + BUG-06 FIX: Full state reset including performance, score and totalAnswered
 function resetToStart() {
+  state.performance   = {};
+  state.totalAnswered = 0;
+  state.score         = 0;
+  state.navigating    = false;
+
+  // Reset tracker UI to empty state
+  if (topicStats) {
+    topicStats.innerHTML = `
+      <div class="tracker-empty">
+        <span class="tracker-empty-icon">📊</span>
+        Complete a practice session to see your topic breakdown here.
+      </div>`;
+  }
+
   summarySection.classList.add("hidden");
   feedbackSection.classList.add("hidden");
   questionSection.classList.add("hidden");
   selectorSection.classList.remove("hidden");
   subjectSelect.value = "";
-  startBtn.disabled = true;
+  startBtn.disabled   = true;
+
+  updateHeaderStats();
 }
 
 // ===== QUESTION RENDERING =====
 function renderQuestion() {
+  state.navigating     = false; // BUG-02 FIX: reset guard after navigation completes
+  state.answered       = false;
+  state.selectedOption = null;
+
   const q     = state.sessionQuestions[state.currentIndex];
   const total = state.sessionQuestions.length;
   const idx   = state.currentIndex;
 
-  state.answered     = false;
-  state.selectedOption = null;
-
   // Progress bar
   const pct = Math.round((idx / total) * 100);
-  if (progressFill)    progressFill.style.width = pct + "%";
-  if (progressFraction) progressFraction.textContent = `${idx + 1} / ${total}`;
+  if (progressFill)     progressFill.style.width       = pct + "%";
+  if (progressFraction) progressFraction.textContent   = `${idx + 1} / ${total}`;
 
-  // Meta
-  subjectLabel.textContent = formatSubject(state.subject);
-  topicLabel.textContent   = q.topic || "General";
+  // Meta labels
+  subjectLabel.textContent    = formatSubject(state.subject);
+  topicLabel.textContent      = q.topic || "General";
   questionCounter.textContent = `Question ${idx + 1} of ${total}`;
+  questionText.textContent    = q.question;
 
-  // Question text
-  questionText.textContent = q.question;
-
-  // Options
+  // Build option buttons
   optionsList.innerHTML = "";
-  const letters = ["A", "B", "C", "D"];
+  const letters = ["A","B","C","D"];
   q.options.forEach((opt, i) => {
     const btn = document.createElement("button");
     btn.className = "option-btn";
@@ -784,8 +635,6 @@ function renderQuestion() {
   submitBtn.classList.remove("hidden");
   nextBtn.classList.add("hidden");
   feedbackSection.classList.add("hidden");
-
-  startTimer(); // begin countdown for this question
 }
 
 function selectOption(clickedBtn, index) {
@@ -793,40 +642,28 @@ function selectOption(clickedBtn, index) {
   document.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
   clickedBtn.classList.add("selected");
   state.selectedOption = index;
-  submitBtn.disabled = false;
+  submitBtn.disabled   = false;
 }
 
 // ===== ANSWER CHECKING =====
 function submitAnswer() {
   if (state.selectedOption === null || state.answered) return;
-  clearTimer(); // stop countdown the moment student submits
   state.answered = true;
   state.totalAnswered++;
 
   const q         = state.sessionQuestions[state.currentIndex];
   const isCorrect = state.selectedOption === q.answer;
 
-  if (isCorrect) {
-    state.score++;
-    state.totalCorrect++;  // cumulative — never resets
-  }
+  if (isCorrect) state.score++;
 
-  // Track performance per topic in BOTH lifetime and session trackers
   const topic = q.topic || "General";
-  if (!state.performance[topic])        state.performance[topic]        = { correct: 0, total: 0 };
-  if (!state.sessionPerformance[topic]) state.sessionPerformance[topic] = { correct: 0, total: 0 };
+  if (!state.performance[topic]) state.performance[topic] = { correct: 0, total: 0 };
   state.performance[topic].total++;
-  state.sessionPerformance[topic].total++;
-  if (isCorrect) {
-    state.performance[topic].correct++;
-    state.sessionPerformance[topic].correct++;
-  }
-  saveProgress();
+  if (isCorrect) state.performance[topic].correct++;
 
-  // Style option buttons
   document.querySelectorAll(".option-btn").forEach((btn, i) => {
     btn.disabled = true;
-    if (i === q.answer)                        btn.classList.add("correct");
+    if (i === q.answer)                              btn.classList.add("correct");
     else if (i === state.selectedOption && !isCorrect) btn.classList.add("wrong");
   });
 
@@ -841,45 +678,36 @@ function submitAnswer() {
 // ===== FEEDBACK =====
 function showFeedback(isCorrect, q) {
   feedbackSection.classList.remove("hidden");
-
-  // Header style
-  feedbackHeader.className = "feedback-header " + (isCorrect ? "correct-header" : "wrong-header");
-
-  // Badge
+  feedbackHeader.className  = "feedback-header " + (isCorrect ? "correct-header" : "wrong-header");
   feedbackBadge.textContent = isCorrect ? "✓  Correct!" : "✗  Incorrect";
-  feedbackBadge.className   = "feedback-badge " + (isCorrect ? "correct" : "wrong");
+  feedbackBadge.className   = "feedback-badge "  + (isCorrect ? "correct" : "wrong");
 
-  // Correct answer hint if wrong
   if (!isCorrect) {
-    const letters = ["A", "B", "C", "D"];
+    const letters = ["A","B","C","D"];
     correctAnswerDisplay.textContent =
       `Correct answer: ${letters[q.answer]}. ${q.options[q.answer]}`;
   } else {
     correctAnswerDisplay.textContent = "";
   }
 
-  // AI explanation
   explanationText.textContent = "";
   explanationText.classList.add("loading-dots");
   fetchExplanation(q, isCorrect);
 }
 
-// ===== MOCK AI EXPLANATION =====
-/*  LIVE API VERSION — uncomment when API key is available
+// ===== AI EXPLANATION =====
+/* LIVE API VERSION — uncomment when API key is available
 async function fetchExplanation(q, isCorrect) {
-  const prompt = `
-You are a helpful Nigerian secondary school exam tutor.
-A student is practicing for WAEC/NECO exams. They just answered this question:
+  const prompt = `You are a helpful Nigerian secondary school exam tutor.
+A student is practising for WAEC/NECO exams.
 Subject: ${formatSubject(state.subject)}
 Topic: ${q.topic || "General"}
 Question: ${q.question}
-Options: ${q.options.map((o, i) => `${["A","B","C","D"][i]}. ${o}`).join(" | ")}
+Options: ${q.options.map((o,i) => `${["A","B","C","D"][i]}. ${o}`).join(" | ")}
 Correct answer: ${["A","B","C","D"][q.answer]}. ${q.options[q.answer]}
 Student answered: ${isCorrect ? "correctly" : "incorrectly"}
-Give a clear, concise explanation (3-5 sentences) of why the correct answer is right.
-Use simple English suitable for a Nigerian secondary school student.
-Do not repeat the question. Go straight to the explanation.
-`.trim();
+Give a clear, concise explanation (3-5 sentences) why the correct answer is right.
+Use simple English suitable for a Nigerian SS3 student. Do not repeat the question.`.trim();
 
   try {
     const response = await fetch(CLAUDE_API_URL, {
@@ -898,7 +726,7 @@ Do not repeat the question. Go straight to the explanation.
     });
     const data = await response.json();
     explanationText.classList.remove("loading-dots");
-    if (data.content && data.content[0] && data.content[0].text) {
+    if (data.content?.[0]?.text) {
       explanationText.textContent = data.content[0].text;
     } else {
       explanationText.textContent = "Explanation unavailable. Check your API key.";
@@ -915,11 +743,10 @@ Do not repeat the question. Go straight to the explanation.
 async function fetchExplanation(q, isCorrect) {
   await delay(900);
   explanationText.classList.remove("loading-dots");
-
   if (q.explanation) {
     explanationText.textContent = q.explanation;
   } else {
-    const letters = ["A", "B", "C", "D"];
+    const letters = ["A","B","C","D"];
     const correct = `${letters[q.answer]}. ${q.options[q.answer]}`;
     explanationText.textContent =
       `The correct answer is ${correct}. ` +
@@ -933,18 +760,20 @@ async function fetchExplanation(q, isCorrect) {
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ===== NAVIGATION =====
+// BUG-02 FIX: state.navigating guard prevents double-click index corruption
 function nextQuestion() {
+  if (state.navigating) return;
+  state.navigating = true;
   state.currentIndex++;
   if (state.currentIndex >= state.sessionQuestions.length) {
     showSummary();
   } else {
-    renderQuestion();
+    renderQuestion(); // renderQuestion() resets navigating = false
   }
 }
 
 // ===== SESSION SUMMARY =====
 function showSummary() {
-  clearTimer();
   questionSection.classList.add("hidden");
   feedbackSection.classList.add("hidden");
   summarySection.classList.remove("hidden");
@@ -954,40 +783,34 @@ function showSummary() {
   const wrong   = total - correct;
   const pct     = Math.round((correct / total) * 100);
 
-  // Score ring (SVG arc — circumference 2π×58 ≈ 364.4)
-  const circumference = 364.4;
-  const arc = document.getElementById("score-arc");
-  if (arc) {
-    const offset = circumference - (pct / 100) * circumference;
-    arc.style.strokeDashoffset = offset;
-    const arcColor = pct >= 70 ? "var(--correct)" : pct >= 40 ? "var(--accent-dark)" : "var(--wrong)";
-    arc.style.stroke = arcColor;
+  if (scoreDisplay) scoreDisplay.textContent = correct;
+  if (scoreDenom)   scoreDenom.textContent   = `/ ${total}`;
+
+  // BUG-04 FIX: animate SVG arc stroke-dashoffset instead of className toggle
+  if (scoreArc) {
+    const arcLen    = 364.4; // 2π × r (r=58)
+    const arcColour = pct >= 70 ? "var(--correct)" : pct >= 40 ? "var(--accent)" : "var(--wrong)";
+    const offset    = arcLen - (pct / 100) * arcLen;
+    scoreArc.style.stroke = arcColour;
+    // requestAnimationFrame ensures browser paints initial state before transition fires (Firefox fix)
+    requestAnimationFrame(() => {
+      setTimeout(() => { scoreArc.style.strokeDashoffset = offset; }, 50);
+    });
   }
 
-  // Ring text
-  const sdEl = document.getElementById("score-display");
-  const sdDenom = document.getElementById("score-denom");
-  const sdPct   = document.getElementById("score-pct");
-  if (sdEl)    sdEl.textContent   = correct;
-  if (sdDenom) sdDenom.textContent = `/ ${total}`;
-  if (sdPct) {
-    sdPct.textContent = `${pct}%`;
-    sdPct.style.fill  = pct >= 70 ? "var(--correct)" : pct >= 40 ? "var(--accent-dark)" : "var(--wrong)";
+  if (scorePct) {
+    scorePct.textContent = `${pct}%`;
+    const pctColour = pct >= 70 ? "var(--correct)" : pct >= 40 ? "var(--warning, #d97706)" : "var(--wrong)";
+    scorePct.setAttribute("fill", pctColour);
   }
 
-  // (keeping old scoreDisplay/scoreDenom/scorePct/scoreRing refs harmless)
-  const level = pct >= 70 ? "excellent" : pct >= 40 ? "good" : "poor";
-
-  // Stats row
-  if (correctCount)  correctCount.textContent  = correct;
-  if (wrongCount)    wrongCount.textContent     = wrong;
+  if (correctCount)    correctCount.textContent    = correct;
+  if (wrongCount)      wrongCount.textContent      = wrong;
   if (accuracyDisplay) accuracyDisplay.textContent = pct + "%";
 
-  // Progress bar — 100% at end
-  if (progressFill)     progressFill.style.width = "100%";
+  if (progressFill)     progressFill.style.width     = "100%";
   if (progressFraction) progressFraction.textContent = `${total} / ${total}`;
 
-  // Weak areas
   renderWeakAreas();
   updateHeaderStats();
 }
@@ -996,7 +819,7 @@ function showSummary() {
 function renderWeakAreas() {
   weakAreasList.innerHTML = "";
 
-  const weak = Object.entries(state.sessionPerformance)
+  const weak = Object.entries(state.performance)
     .filter(([, v]) => v.total > 0 && (v.correct / v.total) < 0.7)
     .sort((a, b) => (a[1].correct / a[1].total) - (b[1].correct / b[1].total));
 
@@ -1017,13 +840,8 @@ function renderWeakAreas() {
     const card = document.createElement("div");
     card.className = `weak-area-card ${level}`;
 
-    const tipsHTML = tips.tips
-      .map(t => `<li>${t}</li>`)
-      .join("");
-
-    const resourcesHTML = tips.resources
-      .map(r => `<span class="resource-chip">📖 ${r}</span>`)
-      .join("");
+    const tipsHTML      = tips.tips.map(t => `<li>${t}</li>`).join("");
+    const resourcesHTML = tips.resources.map(r => `<span class="resource-chip">📖 ${r}</span>`).join("");
 
     card.innerHTML = `
       <div class="weak-area-header">
@@ -1037,7 +855,6 @@ function renderWeakAreas() {
       <div class="weak-area-resources">${resourcesHTML}</div>
       <div class="weak-area-encouragement">💪 ${tips.encouragement}</div>
     `;
-
     weakAreasList.appendChild(card);
   });
 }
@@ -1049,7 +866,6 @@ function getStudyTips(topic) {
 // ===== PERFORMANCE TRACKER =====
 function renderTracker() {
   if (Object.keys(state.performance).length === 0) return;
-
   topicStats.innerHTML = "";
 
   Object.entries(state.performance).forEach(([topic, v]) => {
@@ -1073,19 +889,20 @@ function renderTracker() {
 }
 
 // ===== HEADER STATS =====
+// BUG-03 FIX: shows "—" instead of "0%" before first answer is submitted
 function updateHeaderStats() {
-  const totalQ    = state.totalAnswered;
-  const subjects  = Object.keys(
+  const totalQ   = state.totalAnswered;
+  const subjects = Object.keys(
     questions.reduce((acc, q) => { acc[q.subject] = true; return acc; }, {})
   ).length;
 
-  let accuracy = 0;
-  if (totalQ > 0) {
-    accuracy = Math.round((state.totalCorrect / totalQ) * 100);
-  }
+  // BUG-03 FIX: ternary returns "—" when no questions answered yet
+  const accuracy = totalQ > 0
+    ? Math.round((state.score / totalQ) * 100) + "%"
+    : "—";
 
-  if (headerTotalQ)  headerTotalQ.textContent  = totalQ;
-  if (headerAccuracy) headerAccuracy.textContent = accuracy + "%";
+  if (headerTotalQ)   headerTotalQ.textContent  = totalQ;
+  if (headerAccuracy) headerAccuracy.textContent = accuracy;
   if (headerSubjects) headerSubjects.textContent = subjects;
 }
 
