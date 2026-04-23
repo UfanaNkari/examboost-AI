@@ -1,12 +1,18 @@
 // ===================================================
 // ExamBoost AI — app.js  (Refined MVP · Phase 4)
 // Bugs fixed: BUG-01 through BUG-06
-// Scholar Hackathon Team 03 · April 14, 2026
+// New: Timer fix, Change Subject fix, YouTube + source badges
+// Scholar Hackathon Team 03 · April 2026
 // ===================================================
 
 const CLAUDE_API_KEY = "YOUR_API_KEY_HERE";
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 const QUESTIONS_PER_SESSION = 10;
+
+// ===== TIMER CONSTANTS =====
+const TIMER_SECONDS  = 90;
+let timerInterval    = null;
+let timerSecondsLeft = TIMER_SECONDS;
 
 // ===== STUDY TIPS DATABASE =====
 const studyTips = {
@@ -461,7 +467,7 @@ let state = {
   selectedOption:   null,
   score:            0,
   answered:         false,
-  navigating:       false,   // BUG-02 FIX: guard against double-click
+  navigating:       false,
   totalAnswered:    0,
   performance:      {}
 };
@@ -482,7 +488,6 @@ const optionsList          = document.getElementById("options-list");
 const submitBtn            = document.getElementById("submit-btn");
 const nextBtn              = document.getElementById("next-btn");
 
-// BUG-05 FIX: removed duplicate feedbackSection2 declaration
 const feedbackBadge        = document.getElementById("feedback-badge");
 const feedbackHeader       = document.getElementById("feedback-header");
 const correctAnswerDisplay = document.getElementById("correct-answer-display");
@@ -491,7 +496,7 @@ const explanationText      = document.getElementById("explanation-text");
 const scoreDisplay         = document.getElementById("score-display");
 const scoreDenom           = document.getElementById("score-denom");
 const scorePct             = document.getElementById("score-pct");
-const scoreArc             = document.getElementById("score-arc");   // BUG-04 FIX: was "score-ring"
+const scoreArc             = document.getElementById("score-arc");
 const correctCount         = document.getElementById("correct-count");
 const wrongCount           = document.getElementById("wrong-count");
 const accuracyDisplay      = document.getElementById("accuracy-display");
@@ -514,6 +519,12 @@ submitBtn.addEventListener("click", submitAnswer);
 nextBtn.addEventListener("click", nextQuestion);
 restartBtn.addEventListener("click", resetToStart);
 
+// FIX: Change Subject button — safely wired with null check
+const changeSubjectBtn = document.getElementById("change-subject-btn");
+if (changeSubjectBtn) {
+  changeSubjectBtn.addEventListener("click", resetToStart);
+}
+
 // Keyboard shortcuts: A/B/C/D to select, Enter to submit or advance
 document.addEventListener("keydown", (e) => {
   const key = e.key.toUpperCase();
@@ -529,6 +540,70 @@ document.addEventListener("keydown", (e) => {
 });
 
 updateHeaderStats();
+
+// ===== TIMER FUNCTIONS =====
+function startTimer() {
+  clearTimer();
+  timerSecondsLeft = TIMER_SECONDS;
+  updateTimerDisplay();
+
+  timerInterval = setInterval(() => {
+    timerSecondsLeft--;
+    updateTimerDisplay();
+    if (timerSecondsLeft <= 0) {
+      clearTimer();
+      if (!state.answered) autoTimeOut();
+    }
+  }, 1000);
+}
+
+function clearTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function updateTimerDisplay() {
+  const mins           = Math.floor(timerSecondsLeft / 60);
+  const secs           = timerSecondsLeft % 60;
+  const timerDisplayEl = document.getElementById("timer-display");
+  const timerFill      = document.getElementById("timer-fill");
+
+  if (timerDisplayEl) {
+    timerDisplayEl.textContent = `${mins}:${secs.toString().padStart(2, "0")}`;
+  }
+
+  const pct = (timerSecondsLeft / TIMER_SECONDS) * 100;
+  if (timerFill) {
+    timerFill.style.width = pct + "%";
+    timerFill.className   = "timer-fill" +
+      (pct <= 25 ? " danger" : pct <= 50 ? " warning" : "");
+  }
+}
+
+function autoTimeOut() {
+  state.answered = true;
+  state.totalAnswered++;
+
+  const q     = state.sessionQuestions[state.currentIndex];
+  const topic = q.topic || "General";
+  if (!state.performance[topic]) {
+    state.performance[topic] = { correct: 0, total: 0 };
+  }
+  state.performance[topic].total++;
+
+  document.querySelectorAll(".option-btn").forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add("correct");
+  });
+
+  showFeedback(false, q);
+  renderTracker();
+  updateHeaderStats();
+  submitBtn.classList.add("hidden");
+  nextBtn.classList.remove("hidden");
+}
 
 // ===== SESSION MANAGEMENT =====
 function startSession() {
@@ -548,8 +623,10 @@ function startSession() {
         question:    q.question,
         options:     q.options,
         answer:      answerIndex !== -1 ? answerIndex : 0,
-        topic:       q.topic || "General",
-        explanation: q.explanation_hint || ""
+        topic:       q.topic       || "General",
+        explanation: q.explanation_hint || "",
+        year:        q.year        || "",
+        exam_type:   q.exam_type   || "WAEC"
       };
     });
 
@@ -569,14 +646,14 @@ function startSession() {
   renderQuestion();
 }
 
-// BUG-01 + BUG-06 FIX: Full state reset including performance, score and totalAnswered
+// FIX: Full state reset — clears timer, performance, score and tracker UI
 function resetToStart() {
+  clearTimer();
   state.performance   = {};
   state.totalAnswered = 0;
   state.score         = 0;
   state.navigating    = false;
 
-  // Reset tracker UI to empty state
   if (topicStats) {
     topicStats.innerHTML = `
       <div class="tracker-empty">
@@ -597,7 +674,7 @@ function resetToStart() {
 
 // ===== QUESTION RENDERING =====
 function renderQuestion() {
-  state.navigating     = false; // BUG-02 FIX: reset guard after navigation completes
+  state.navigating     = false;
   state.answered       = false;
   state.selectedOption = null;
 
@@ -605,18 +682,15 @@ function renderQuestion() {
   const total = state.sessionQuestions.length;
   const idx   = state.currentIndex;
 
-  // Progress bar
   const pct = Math.round((idx / total) * 100);
-  if (progressFill)     progressFill.style.width       = pct + "%";
-  if (progressFraction) progressFraction.textContent   = `${idx + 1} / ${total}`;
+  if (progressFill)     progressFill.style.width     = pct + "%";
+  if (progressFraction) progressFraction.textContent = `${idx + 1} / ${total}`;
 
-  // Meta labels
   subjectLabel.textContent    = formatSubject(state.subject);
   topicLabel.textContent      = q.topic || "General";
   questionCounter.textContent = `Question ${idx + 1} of ${total}`;
   questionText.textContent    = q.question;
 
-  // Build option buttons
   optionsList.innerHTML = "";
   const letters = ["A","B","C","D"];
   q.options.forEach((opt, i) => {
@@ -635,6 +709,9 @@ function renderQuestion() {
   submitBtn.classList.remove("hidden");
   nextBtn.classList.add("hidden");
   feedbackSection.classList.add("hidden");
+
+  // FIX: start countdown timer for each new question
+  startTimer();
 }
 
 function selectOption(clickedBtn, index) {
@@ -648,6 +725,7 @@ function selectOption(clickedBtn, index) {
 // ===== ANSWER CHECKING =====
 function submitAnswer() {
   if (state.selectedOption === null || state.answered) return;
+  clearTimer(); // FIX: stop timer immediately on submit
   state.answered = true;
   state.totalAnswered++;
 
@@ -663,7 +741,7 @@ function submitAnswer() {
 
   document.querySelectorAll(".option-btn").forEach((btn, i) => {
     btn.disabled = true;
-    if (i === q.answer)                              btn.classList.add("correct");
+    if (i === q.answer)                                btn.classList.add("correct");
     else if (i === state.selectedOption && !isCorrect) btn.classList.add("wrong");
   });
 
@@ -680,7 +758,7 @@ function showFeedback(isCorrect, q) {
   feedbackSection.classList.remove("hidden");
   feedbackHeader.className  = "feedback-header " + (isCorrect ? "correct-header" : "wrong-header");
   feedbackBadge.textContent = isCorrect ? "✓  Correct!" : "✗  Incorrect";
-  feedbackBadge.className   = "feedback-badge "  + (isCorrect ? "correct" : "wrong");
+  feedbackBadge.className   = "feedback-badge " + (isCorrect ? "correct" : "wrong");
 
   if (!isCorrect) {
     const letters = ["A","B","C","D"];
@@ -689,6 +767,10 @@ function showFeedback(isCorrect, q) {
   } else {
     correctAnswerDisplay.textContent = "";
   }
+
+  // Remove any previous source row before generating a new one
+  const oldSource = document.getElementById("explanation-source");
+  if (oldSource) oldSource.remove();
 
   explanationText.textContent = "";
   explanationText.classList.add("loading-dots");
@@ -736,6 +818,7 @@ Use simple English suitable for a Nigerian SS3 student. Do not repeat the questi
     explanationText.textContent = "⚠ Network error — could not reach the AI.";
     console.error("Claude API error:", err);
   }
+  appendSourceRow(q);
 }
 */
 
@@ -743,6 +826,7 @@ Use simple English suitable for a Nigerian SS3 student. Do not repeat the questi
 async function fetchExplanation(q, isCorrect) {
   await delay(900);
   explanationText.classList.remove("loading-dots");
+
   if (q.explanation) {
     explanationText.textContent = q.explanation;
   } else {
@@ -755,12 +839,38 @@ async function fetchExplanation(q, isCorrect) {
       `Review this topic in your textbook and practise similar questions ` +
       `to strengthen your understanding before the exam.`;
   }
+
+  appendSourceRow(q);
+}
+
+// NEW: Builds and injects the exam source, year and YouTube row
+function appendSourceRow(q) {
+  const examType = q.exam_type || "WAEC";
+  const year     = q.year      || "";
+
+  const ytQuery  = encodeURIComponent(
+    `${q.topic} ${formatSubject(state.subject)} ${examType} ${year} Nigeria SS3`
+  );
+  const ytURL    = `https://www.youtube.com/results?search_query=${ytQuery}`;
+
+  const sourceDiv       = document.createElement("div");
+  sourceDiv.id          = "explanation-source";
+  sourceDiv.className   = "explanation-source";
+  sourceDiv.innerHTML   = `
+    <span class="source-chip ${examType.toLowerCase()}">${examType}</span>
+    ${year ? `<span class="source-chip year">${year}</span>` : ""}
+    <a class="source-youtube"
+       href="${ytURL}"
+       target="_blank"
+       rel="noopener noreferrer">▶ Watch on YouTube</a>
+  `;
+
+  explanationText.parentElement.appendChild(sourceDiv);
 }
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ===== NAVIGATION =====
-// BUG-02 FIX: state.navigating guard prevents double-click index corruption
 function nextQuestion() {
   if (state.navigating) return;
   state.navigating = true;
@@ -768,12 +878,13 @@ function nextQuestion() {
   if (state.currentIndex >= state.sessionQuestions.length) {
     showSummary();
   } else {
-    renderQuestion(); // renderQuestion() resets navigating = false
+    renderQuestion();
   }
 }
 
 // ===== SESSION SUMMARY =====
 function showSummary() {
+  clearTimer();
   questionSection.classList.add("hidden");
   feedbackSection.classList.add("hidden");
   summarySection.classList.remove("hidden");
@@ -786,13 +897,11 @@ function showSummary() {
   if (scoreDisplay) scoreDisplay.textContent = correct;
   if (scoreDenom)   scoreDenom.textContent   = `/ ${total}`;
 
-  // BUG-04 FIX: animate SVG arc stroke-dashoffset instead of className toggle
   if (scoreArc) {
-    const arcLen    = 364.4; // 2π × r (r=58)
+    const arcLen    = 364.4;
     const arcColour = pct >= 70 ? "var(--correct)" : pct >= 40 ? "var(--accent)" : "var(--wrong)";
     const offset    = arcLen - (pct / 100) * arcLen;
     scoreArc.style.stroke = arcColour;
-    // requestAnimationFrame ensures browser paints initial state before transition fires (Firefox fix)
     requestAnimationFrame(() => {
       setTimeout(() => { scoreArc.style.strokeDashoffset = offset; }, 50);
     });
@@ -889,14 +998,12 @@ function renderTracker() {
 }
 
 // ===== HEADER STATS =====
-// BUG-03 FIX: shows "—" instead of "0%" before first answer is submitted
 function updateHeaderStats() {
   const totalQ   = state.totalAnswered;
   const subjects = Object.keys(
     questions.reduce((acc, q) => { acc[q.subject] = true; return acc; }, {})
   ).length;
 
-  // BUG-03 FIX: ternary returns "—" when no questions answered yet
   const accuracy = totalQ > 0
     ? Math.round((state.score / totalQ) * 100) + "%"
     : "—";
